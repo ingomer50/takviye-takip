@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" href="./icons/icon-192.png" />
+  <title>Takviye Takip</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #263348;
+      --border: #334155;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --primary: #10b981;
+      --primary-dim: rgba(16, 185, 129, 0.16);
+      --amber: #f59e0b;
+      --amber-dim: rgba(245, 158, 11, 0.16);
+      --blue: #38bdf8;
+      --blue-dim: rgba(56, 189, 248, 0.16);
+      --purple: #a78bfa;
+      --purple-dim: rgba(167, 139, 250, 0.16);
+      --danger: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+      line-height: 1.45;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 16px 16px 24px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+
+    .header-title {
+      cursor: pointer;
+    }
+
+    .header-title h1 {
+      font-size: 1.22rem;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .header-title p {
+      margin: 2px 0 0;
+      font-size: 0.82rem;
+      color: var(--primary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 11px;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .icon-btn:active {
+      transform: scale(0.96);
+    }
+
+    .icon-btn.highlight {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: var(--primary-dim);
+      color: var(--primary);
+    }
+
+    /* Install Banner */
+    #installBanner {
+      display: none;
+      background: linear-gradient(135deg, #065f46, #0f766e);
+      border: 1px solid #10b981;
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    #installBanner span {
+      font-size: 0.84rem;
+      font-weight: 500;
+    }
+
+    #installBtn {
+      background: #ffffff;
+      color: #064e3b;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 13px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    /* Week Navigation Bar */
+    .week-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 6px;
+    }
+
+    .nav-arrow {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .nav-arrow:active {
+      transform: scale(0.95);
+    }
+
+    .week-center-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .month-jump-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 6px 11px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .today-jump-btn {
+      background: var(--primary-dim);
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Week Strip */
+    .week-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+      touch-action: pan-y;
+    }
+
+    .day-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .day-pill.is-today {
+      border-color: rgba(56, 189, 248, 0.55);
+    }
+
+    .day-pill.active {
+      background: var(--primary-dim);
+      border-color: var(--primary);
+    }
+
+    .day-pill .d-name {
+      font-size: 0.68rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .day-pill.active .d-name {
+      color: var(--primary);
+    }
+
+    .day-pill .d-num {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 2px;
+    }
+
+    .day-pill .d-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin: 4px auto 0;
+      background: transparent;
+    }
+
+    .day-pill.done .d-dot {
+      background: var(--primary);
+    }
+
+    .day-pill.partial .d-dot {
+      background: var(--amber);
+    }
+
+    /* Progress & Status Card */
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .progress-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .progress-count {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      width: 0%;
+      border-radius: 99px;
+      transition: width 0.25s ease;
+    }
+
+    .day-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      font-size: 0.73rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 8px;
+    }
+
+    .badge-mineral {
+      background: var(--blue-dim);
+      color: var(--blue);
+    }
+
+    .badge-rest {
+      background: var(--purple-dim);
+      color: var(--purple);
+    }
+
+    .badge-cycle {
+      background: var(--amber-dim);
+      color: var(--amber);
+      cursor: pointer;
+    }
+
+    /* Thyroid Timer Box */
+    .timer-box {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .timer-box.waiting {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .timer-box.safe {
+      border-color: var(--primary);
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .timer-info .t-title {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .timer-info .t-main {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timer-info .t-sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .time-edit-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Section Cards */
+    .section {
+      margin-bottom: 14px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+
+    .section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .section-time {
+      font-size: 0.76rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .item-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .supp-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .supp-item:active {
+      transform: scale(0.99);
+    }
+
+    .supp-item.checked {
+      background: rgba(16, 185, 129, 0.09);
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    .checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      border: 2px solid var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+
+    .supp-item.checked .checkbox {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .checkbox svg {
+      width: 15px;
+      height: 15px;
+      stroke: #ffffff;
+      stroke-width: 3;
+      fill: none;
+      opacity: 0;
+    }
+
+    .supp-item.checked .checkbox svg {
+      opacity: 1;
+    }
+
+    .supp-details {
+      flex: 1;
+    }
+
+    .supp-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .supp-item.checked .supp-name {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .supp-note {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .supp-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: var(--surface-2);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .supp-tag.alt {
+      background: var(--blue-dim);
+      color: var(--blue);
+    }
+
+    .supp-tag.thyroid {
+      background: var(--amber-dim);
+      color: var(--amber);
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.8);
+      z-index: 50;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-radius: 22px 22px 0 0;
+      width: 100%;
+      max-width: 520px;
+      padding: 20px 18px 28px;
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.05rem;
+    }
+
+    .close-btn {
+      background: var(--surface-2);
+      border: none;
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Full Month Calendar Styles */
+    .cal-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-lbl {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .cal-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .cal-month-title {
+      font-size: 1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .cal-select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 5px 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .cal-grid-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .cal-grid-header span {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .cal-cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 10px;
+      background: var(--bg);
+      border: 1px solid transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .cal-cell.empty {
+      background: transparent;
+      cursor: default;
+    }
+
+    .cal-cell.is-today {
+      border-color: var(--blue);
+    }
+
+    .cal-cell.selected {
+      border-color: var(--primary);
+      background: var(--primary-dim);
+      color: #ffffff;
+    }
+
+    .cal-cell.done {
+      background: rgba(16, 185, 129, 0.22);
+      color: #6ee7b7;
+    }
+
+    .cal-cell.selected.done {
+      background: var(--primary);
+      color: #052e16;
+    }
+
+    .cal-cell .c-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      margin-top: 2px;
+    }
+
+    .cal-cell.done .c-dot {
+      background: var(--primary);
+    }
+
+    .cal-cell.selected.done .c-dot {
+      background: #052e16;
+    }
+
+    .cal-cell.partial .c-dot {
+      background: var(--amber);
+    }
+
+    .cal-legend {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 12px;
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    .cal-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .leg-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .modal-row {
+      margin-bottom: 14px;
+    }
+
+    .modal-row label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .modal-row input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--primary);
+      color: #052e16;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 11px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.86rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .info-list {
+      font-size: 0.83rem;
+      color: var(--muted);
+      padding-left: 18px;
+      margin: 8px 0;
+    }
+
+    .info-list li {
+      margin-bottom: 6px;
+    }
+
+    .divider {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title" onclick="openCalendarModal()">
+        <h1>Takviye Takip</h1>
+        <p id="selectedDateText">Bugün ▾</p>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn highlight" onclick="openCalendarModal()">Takvim</button>
+        <button class="icon-btn" onclick="openModal('cycleModal')">Döngü</button>
+        <button class="icon-btn" onclick="openModal('alarmModal')">Ayar</button>
+      </div>
+    </div>
+
+    <div id="installBanner">
+      <span>Android ana ekranına uygulama olarak yükle</span>
+      <button id="installBtn">Yükle</button>
+    </div>
+
+    <!-- Week Navigation -->
+    <div class="week-nav">
+      <button class="nav-arrow" onclick="shiftWeek(-7)">‹ Önceki</button>
+      <div class="week-center-controls">
+        <button class="month-jump-btn" id="weekMonthLabel" onclick="openCalendarModal()">Kasım 2026</button>
+        <button class="today-jump-btn" id="todayJumpBtn" style="display:none;" onclick="jumpToToday()">Bugün</button>
+      </div>
+      <button class="nav-arrow" onclick="shiftWeek(7)">Sonraki ›</button>
+    </div>
+
+    <div class="week-strip" id="weekStrip"></div>
+
+    <div class="status-card">
+      <div class="progress-row">
+        <span class="progress-label" id="dayModeLabel">Günlük İlerleme</span>
+        <span class="progress-count" id="progressCount">0 / 0</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <div class="day-badges" id="dayBadges"></div>
+    </div>
+
+    <div class="timer-box" id="timerBox">
+      <div class="timer-info">
+        <div class="t-title">LEVOTİROKSİN 4 SAAT KURALI</div>
+        <div class="t-main" id="timerMain">Sabah ilacı bekleniyor</div>
+        <div class="t-sub" id="timerSub">İşaretlediğinizde 4 saatlik geri sayım başlar</div>
+      </div>
+      <button class="time-edit-btn" id="editThyroidTimeBtn" style="display:none;" onclick="openModal('thyroidTimeModal')">Saati Düzenle</button>
+    </div>
+
+    <div id="sectionsContainer"></div>
+  </div>
+
+  <!-- Full All-Time Calendar Modal -->
+  <div class="modal-backdrop" id="calendarModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Tüm Zamanlar Takvimi</h2>
+        <button class="close-btn" onclick="closeModal('calendarModal')">✕</button>
+      </div>
+
+      <div class="cal-stats">
+        <div class="stat-box">
+          <div class="stat-val" id="statMonthDone">0</div>
+          <div class="stat-lbl">Bu Ay Tam Gün</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statStreak">0</div>
+          <div class="stat-lbl">Güncel Seri</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="statAllTime">0</div>
+          <div class="stat-lbl">Toplam Kayıtlı Gün</div>
+        </div>
+      </div>
+
+      <div class="cal-controls">
+        <button class="nav-arrow" onclick="changeCalMonth(-1)">‹ Önceki Ay</button>
+        <div class="cal-month-title">
+          <select class="cal-select" id="calMonthSelect" onchange="onCalSelectChange()"></select>
+          <select class="cal-select" id="calYearSelect" onchange="onCalSelectChange()"></select>
+        </div>
+        <button class="nav-arrow" onclick="changeCalMonth(1)">Sonraki Ay ›</button>
+      </div>
+
+      <div class="cal-grid-header">
+        <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+
+      <div class="cal-legend">
+        <span><i class="leg-dot" style="background:var(--primary)"></i> Tamamlandı</span>
+        <span><i class="leg-dot" style="background:var(--amber)"></i> Kısmi</span>
+        <span><i class="leg-dot" style="border:1.5px solid var(--blue)"></i> Bugün</span>
+      </div>
+
+      <button class="btn-secondary" style="margin-top:14px;" onclick="jumpToToday(); closeModal('calendarModal');">Bugüne Dön</button>
+    </div>
+  </div>
+
+  <!-- Thyroid Time Edit Modal -->
+  <div class="modal-backdrop" id="thyroidTimeModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Levotiroksin İçim Saati</h2>
+        <button class="close-btn" onclick="closeModal('thyroidTimeModal')">✕</button>
+      </div>
+      <div class="modal-row">
+        <label>İlacı sabah kaçta içtiniz?</label>
+        <input type="time" id="thyroidTimeInput" />
+      </div>
+      <button class="btn-primary" onclick="saveThyroidTime()">Saati Güncelle</button>
+    </div>
+  </div>
+
+  <!-- Tribulus Cycle Modal -->
+  <div class="modal-backdrop" id="cycleModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Tribulus 6+2 Hafta Döngüsü</h2>
+        <button class="close-btn" onclick="closeModal('cycleModal')">✕</button>
+      </div>
+      <p style="font-size:0.84rem; color:var(--muted); margin-top:0;">
+        Karaciğer yükünü önlemek ve reseptör yanıtını korumak için 42 gün (6 hafta) kullanım sonrası 14 gün (2 hafta) ara önerilir.
+      </p>
+      <div class="modal-row">
+        <label>Kür Başlangıç Tarihi</label>
+        <input type="date" id="cycleStartInput" />
+      </div>
+      <button class="btn-primary" onclick="saveCycleStart()">Tarihi Kaydet</button>
+      <button class="btn-secondary" onclick="resetCycleToday()">Bugünü 1. Gün Olarak Başlat</button>
+    </div>
+  </div>
+
+  <!-- Alarm, Calendar Export & Data Backup Modal -->
+  <div class="modal-backdrop" id="alarmModal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h2>Hatırlatıcı & Veri Yedekleme</h2>
+        <button class="close-btn" onclick="closeModal('alarmModal')">✕</button>
+      </div>
+      <p style="font-size:0.84rem; color:var(--muted); margin-top:0;">
+        Android telefonunuzun Takvim/Saat bildirimlerine otomatik tekrarlayan hatırlatıcı ekleyin:
+      </p>
+      <button class="btn-primary" onclick="downloadICS()">Android Takvim Hatırlatıcılarını İndir (.ics)</button>
+      <button class="btn-secondary" onclick="requestNotifPermission()">Tarayıcı Bildirim İzni Ver</button>
+      <ul class="info-list" style="margin-top:12px;">
+        <li><strong>Sabah 07:30:</strong> Levotiroksin 50 mcg (Aç karnına)</li>
+        <li><strong>Öğle 12:30:</strong> Öğle Takviye Paketi (+Pzt/Çar/Cum Çinko & Selenyum)</li>
+        <li><strong>Akşam 19:30:</strong> Tribulus 2. Kapsül (500 mg)</li>
+        <li><strong>Gece 22:30:</strong> Magnezyum (Yatmadan 1 saat önce)</li>
+      </ul>
+
+      <hr class="divider" />
+      <p style="font-size:0.84rem; color:var(--muted); margin:0 0 8px;">
+        Tüm zamanlardaki geçmiş kayıtlarınızı yedekleyin veya geri yükleyin:
+      </p>
+      <button class="btn-secondary" onclick="exportBackupJSON()">Tüm Geçmişi Yedekle (.json)</button>
+      <button class="btn-secondary" onclick="document.getElementById('importFileInput').click()">Yedekten Geri Yükle (.json)</button>
+      <input type="file" id="importFileInput" accept=".json,application/json" style="display:none;" onchange="importBackupJSON(event)" />
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBanner').style.display = 'flex';
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById('installBanner').style.display = 'none';
+    });
+
+    function toDateKey(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function parseDateKey(key) {
+      const [y, m, d] = key.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    const DAY_NAMES_SHORT = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
+    const DAY_NAMES_FULL = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
+    const MONTH_NAMES = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+
+    let selectedKey = toDateKey(new Date());
+    let calViewYear = new Date().getFullYear();
+    let calViewMonth = new Date().getMonth();
+
+    function getStore() {
+      try {
+        return JSON.parse(localStorage.getItem('takviye_store_v1') || '{}');
+      } catch {
+        return {};
+      }
+    }
+
+    function setStore(data) {
+      localStorage.setItem('takviye_store_v1', JSON.stringify(data));
+    }
+
+    function getDayData(key) {
+      const store = getStore();
+      if (!store.days) store.days = {};
+      if (!store.days[key]) store.days[key] = { checked: {}, thyroidTs: null };
+      return store.days[key];
+    }
+
+    function saveDayData(key, dayData) {
+      const store = getStore();
+      if (!store.days) store.days = {};
+      store.days[key] = dayData;
+      setStore(store);
+    }
+
+    function getScheduleForDate(dateObj) {
+      const dow = dateObj.getDay();
+      const isSunday = dow === 0;
+      const isMineralDay = (dow === 1 || dow === 3 || dow === 5);
+
+      if (isSunday) {
+        return [
+          {
+            id: 'morning',
+            title: 'Sabah Aç Karnına',
+            time: '07:00 – 08:00',
+            items: [
+              { id: 'levo', name: 'Levotiroksin 50 mcg', note: 'Tek başına bol su ile (4 saat kuralı)', tag: 'Tiroid', tagClass: 'thyroid' }
+            ]
+          },
+          {
+            id: 'noon',
+            title: 'Öğle Yemeği (Sadece Eksik Tamamlama)',
+            time: 'Levotiroksinden ≥4 saat sonra',
+            items: [
+              { id: 'folat', name: 'Folat', note: 'Kan düzeyini tamamlamak için Pazar dahil devam', tag: 'Günlük', tagClass: '' },
+              { id: 'b12', name: 'Vitamin B12', note: 'Folat ile metilasyon dengesi için', tag: 'Günlük', tagClass: '' }
+            ]
+          }
+        ];
+      }
+
+      const noonItems = [
+        { id: 'tribulus_1', name: 'Tribulus terrestris (1. Kapsül)', note: '500 mg — Tok karnına (1+1 dozun ilki)', tag: '1/2 Doz', tagClass: '' },
+        { id: 'folat', name: 'Folat', note: 'Eksiklik tamamlama protokolü', tag: 'Günlük', tagClass: '' },
+        { id: 'b12', name: 'Vitamin B12', note: 'Suda çözünür, folat ile sinerjik', tag: 'Günlük', tagClass: '' },
+        { id: 'omega3', name: 'Balık Yağı (Omega-3)', note: 'Yemekteki yağlarla tam emilim', tag: 'Günlük', tagClass: '' },
+        { id: 'coqh', name: 'Koenzim QH (Ubiquinol)', note: 'Mitokondriyal ve antioksidan destek', tag: 'Günlük', tagClass: '' },
+        { id: 'd3k2', name: 'Vitamin D3 + K2', note: 'Yağda çözünen vitamin kompleksi', tag: 'Günlük', tagClass: '' }
+      ];
+
+      if (isMineralDay) {
+        noonItems.push(
+          { id: 'zinc', name: 'Çinko', note: 'Tok karnına — Sadece Pzt / Çar / Cum', tag: 'Gün Aşırı', tagClass: 'alt' },
+          { id: 'selenium', name: 'Selenyum', note: 'Haşimato desteği — Sadece Pzt / Çar / Cum', tag: 'Gün Aşırı', tagClass: 'alt' }
+        );
+      }
+
+      return [
+        {
+          id: 'morning',
+          title: 'Sabah Aç Karnına',
+          time: '07:00 – 08:00',
+          items: [
+            { id: 'levo', name: 'Levotiroksin 50 mcg', note: 'Tek başına bol su ile (4 saat kuralı)', tag: 'Tiroid', tagClass: 'thyroid' }
+          ]
+        },
+        {
+          id: 'noon',
+          title: 'Öğle Yemeği ile Birlikte',
+          time: 'Levotiroksinden ≥4 saat sonra',
+          items: noonItems
+        },
+        {
+          id: 'dinner',
+          title: 'Akşam Yemeği ile Birlikte',
+          time: '19:00 – 20:30',
+          items: [
+            { id: 'tribulus_2', name: 'Tribulus terrestris (2. Kapsül)', note: '500 mg — Uykuyu bölmemesi için yemekle', tag: '2/2 Doz', tagClass: '' }
+          ]
+        },
+        {
+          id: 'night',
+          title: 'Gece (Yatmadan 1 Saat Önce)',
+          time: '22:30 – 23:30',
+          items: [
+            { id: 'magnesium', name: 'Magnezyum', note: 'Çinko ile yarışmaz, uyku ve kas toparlanması', tag: 'Gece', tagClass: '' }
+          ]
+        }
+      ];
+    }
+
+    function getDayCompletionStatus(dateObj) {
+      const key = toDateKey(dateObj);
+      const sched = getScheduleForDate(dateObj);
+      const total = sched.reduce((acc, s) => acc + s.items.length, 0);
+      const dayData = getDayData(key);
+      const done = sched.reduce((acc, s) => acc + s.items.filter(i => dayData.checked[i.id]).length, 0);
+      return { done, total, status: done === total && total > 0 ? 'done' : done > 0 ? 'partial' : 'none' };
+    }
+
+    function toggleItem(itemId) {
+      const dayData = getDayData(selectedKey);
+      const nextState = !dayData.checked[itemId];
+      dayData.checked[itemId] = nextState;
+
+      if (itemId === 'levo') {
+        if (nextState) {
+          const now = new Date();
+          const selDate = parseDateKey(selectedKey);
+          selDate.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), 0);
+          dayData.thyroidTs = selDate.getTime();
+        } else {
+          dayData.thyroidTs = null;
+        }
+      }
+
+      if (navigator.vibrate) navigator.vibrate(25);
+      saveDayData(selectedKey, dayData);
+      render();
+    }
+
+    // Shift selected week by +/- 7 days
+    function shiftWeek(days) {
+      const d = parseDateKey(selectedKey);
+      d.setDate(d.getDate() + days);
+      selectedKey = toDateKey(d);
+      render();
+    }
+
+    function jumpToToday() {
+      selectedKey = toDateKey(new Date());
+      render();
+    }
+
+    // Get Monday of the week containing dateObj
+    function getMondayOfWeek(dateObj) {
+      const d = new Date(dateObj);
+      const day = d.getDay(); // 0=Sun, 1=Mon...
+      const diff = day === 0 ? -6 : 1 - day;
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+
+    function renderWeekStrip() {
+      const strip = document.getElementById('weekStrip');
+      strip.innerHTML = '';
+      const todayKey = toDateKey(new Date());
+      const selDate = parseDateKey(selectedKey);
+      const monday = getMondayOfWeek(selDate);
+
+      document.getElementById('weekMonthLabel').textContent = `${MONTH_NAMES[selDate.getMonth()]} ${selDate.getFullYear()} ▾`;
+      document.getElementById('todayJumpBtn').style.display = (selectedKey === todayKey) ? 'none' : 'inline-block';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const key = toDateKey(d);
+        const { status } = getDayCompletionStatus(d);
+
+        const pill = document.createElement('div');
+        pill.className = 'day-pill' +
+          (key === selectedKey ? ' active' : '') +
+          (key === todayKey ? ' is-today' : '') +
+          (status === 'done' ? ' done' : status === 'partial' ? ' partial' : '');
+        pill.innerHTML = `
+          <div class="d-name">${DAY_NAMES_SHORT[d.getDay()]}</div>
+          <div class="d-num">${d.getDate()}</div>
+          <div class="d-dot"></div>
+        `;
+        pill.onclick = () => {
+          selectedKey = key;
+          render();
+        };
+        strip.appendChild(pill);
+      }
+    }
+
+    // Touch swipe support on week strip
+    let touchStartX = 0;
+    const weekStripEl = document.getElementById('weekStrip');
+    weekStripEl.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    weekStripEl.addEventListener('touchend', (e) => {
+      const diff = e.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(diff) > 45) {
+        shiftWeek(diff < 0 ? 7 : -7);
+      }
+    }, { passive: true });
+
+    // Full Monthly Calendar Functions
+    function openCalendarModal() {
+      const selDate = parseDateKey(selectedKey);
+      calViewYear = selDate.getFullYear();
+      calViewMonth = selDate.getMonth();
+      populateMonthYearSelects();
+      renderFullCalendar();
+      openModal('calendarModal');
+    }
+
+    function populateMonthYearSelects() {
+      const mSel = document.getElementById('calMonthSelect');
+      const ySel = document.getElementById('calYearSelect');
+      mSel.innerHTML = '';
+      MONTH_NAMES.forEach((name, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.textContent = name;
+        if (idx === calViewMonth) opt.selected = true;
+        mSel.appendChild(opt);
+      });
+
+      ySel.innerHTML = '';
+      const currentYear = new Date().getFullYear();
+      for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        if (y === calViewYear) opt.selected = true;
+        ySel.appendChild(opt);
+      }
+    }
+
+    function onCalSelectChange() {
+      calViewMonth = Number(document.getElementById('calMonthSelect').value);
+      calViewYear = Number(document.getElementById('calYearSelect').value);
+      renderFullCalendar();
+    }
+
+    function changeCalMonth(delta) {
+      calViewMonth += delta;
+      if (calViewMonth < 0) {
+        calViewMonth = 11;
+        calViewYear--;
+      } else if (calViewMonth > 11) {
+        calViewMonth = 0;
+        calViewYear++;
+      }
+      populateMonthYearSelects();
+      renderFullCalendar();
+    }
+
+    function computeAllTimeStats() {
+      const store = getStore();
+      const daysMap = store.days || {};
+      let allTimeActiveDays = 0;
+      Object.keys(daysMap).forEach(k => {
+        const checkedObj = daysMap[k].checked || {};
+        if (Object.values(checkedObj).some(Boolean)) {
+          allTimeActiveDays++;
+        }
+      });
+
+      // Compute current streak up to today (or yesterday if today not yet done)
+      let streak = 0;
+      const cursor = new Date();
+      const todayStatus = getDayCompletionStatus(cursor).status;
+      if (todayStatus !== 'done') {
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      while (true) {
+        const st = getDayCompletionStatus(cursor).status;
+        if (st === 'done') {
+          streak++;
+          cursor.setDate(cursor.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+
+      return { allTimeActiveDays, streak };
+    }
+
+    function renderFullCalendar() {
+      const grid = document.getElementById('calGrid');
+      grid.innerHTML = '';
+      const todayKey = toDateKey(new Date());
+
+      const firstDay = new Date(calViewYear, calViewMonth, 1);
+      const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+      // Monday-based offset: Mon=0 ... Sun=6
+      const startOffset = (firstDay.getDay() + 6) % 7;
+
+      for (let i = 0; i < startOffset; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'cal-cell empty';
+        grid.appendChild(empty);
+      }
+
+      let monthDoneCount = 0;
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(calViewYear, calViewMonth, d);
+        const key = toDateKey(dateObj);
+        const { status } = getDayCompletionStatus(dateObj);
+        if (status === 'done') monthDoneCount++;
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell' +
+          (key === todayKey ? ' is-today' : '') +
+          (key === selectedKey ? ' selected' : '') +
+          (status === 'done' ? ' done' : status === 'partial' ? ' partial' : '');
+
+        cell.innerHTML = `<span>${d}</span><span class="c-dot"></span>`;
+        cell.onclick = () => {
+          selectedKey = key;
+          closeModal('calendarModal');
+          render();
+        };
+        grid.appendChild(cell);
+      }
+
+      const { allTimeActiveDays, streak } = computeAllTimeStats();
+      document.getElementById('statMonthDone').textContent = `${monthDoneCount} / ${daysInMonth}`;
+      document.getElementById('statStreak').textContent = `${streak} gün`;
+      document.getElementById('statAllTime').textContent = `${allTimeActiveDays} gün`;
+    }
+
+    function updateTimerUI() {
+      const dayData = getDayData(selectedKey);
+      const box = document.getElementById('timerBox');
+      const mainEl = document.getElementById('timerMain');
+      const subEl = document.getElementById('timerSub');
+      const editBtn = document.getElementById('editThyroidTimeBtn');
+
+      if (!dayData.checked['levo'] || !dayData.thyroidTs) {
+        box.className = 'timer-box';
+        mainEl.textContent = 'Sabah ilacı bekleniyor';
+        subEl.textContent = 'Levotiroksin işaretlendiğinde 4 saat sayacı başlar';
+        editBtn.style.display = 'none';
+        return;
+      }
+
+      editBtn.style.display = 'block';
+      const takenDate = new Date(dayData.thyroidTs);
+      const safeDate = new Date(dayData.thyroidTs + 4 * 60 * 60 * 1000);
+      const takenStr = takenDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+      const safeStr = safeDate.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+      const diffMs = safeDate.getTime() - Date.now();
+      if (diffMs > 0) {
+        const hrs = Math.floor(diffMs / 3600000);
+        const mins = Math.floor((diffMs % 3600000) / 60000);
+        const secs = Math.floor((diffMs % 60000) / 1000);
+        box.className = 'timer-box waiting';
+        mainEl.textContent = `Kalan: ${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        subEl.textContent = `İçim: ${takenStr} → Öğle takviyeleri ${safeStr} sonrası güvenli`;
+      } else {
+        box.className = 'timer-box safe';
+        mainEl.textContent = '4 Saat Doldu — Takviyeler Güvenli';
+        subEl.textContent = `Sabah içim: ${takenStr} (${safeStr} itibarıyla emilim bariyeri bitti)`;
+      }
+    }
+
+    function getCycleBadgeText() {
+      const store = getStore();
+      if (!store.cycleStart) {
+        const todayKey = toDateKey(new Date());
+        store.cycleStart = todayKey;
+        setStore(store);
+      }
+      const start = parseDateKey(store.cycleStart);
+      const current = parseDateKey(selectedKey);
+      const diffDays = Math.floor((current - start) / 86400000);
+      const cyclePos = ((diffDays % 56) + 56) % 56;
+      if (cyclePos < 42) {
+        return `Tribulus Kür: ${cyclePos + 1}. / 42 Gün`;
+      } else {
+        return `Tribulus Ara Dönemi: ${cyclePos - 41}. / 14 Gün`;
+      }
+    }
+
+    function render() {
+      renderWeekStrip();
+
+      const selDate = parseDateKey(selectedKey);
+      const todayKey = toDateKey(new Date());
+      const prefix = selectedKey === todayKey ? 'Bugün • ' : '';
+      document.getElementById('selectedDateText').textContent =
+        `${prefix}${selDate.getDate()} ${MONTH_NAMES[selDate.getMonth()]} ${selDate.getFullYear()} ${DAY_NAMES_FULL[selDate.getDay()]} ▾`;
+
+      const sched = getScheduleForDate(selDate);
+      const dayData = getDayData(selectedKey);
+
+      const total = sched.reduce((acc, s) => acc + s.items.length, 0);
+      const done = sched.reduce((acc, s) => acc + s.items.filter(i => dayData.checked[i.id]).length, 0);
+      const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+      document.getElementById('progressCount').textContent = `${done} / ${total} (%${pct})`;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+
+      const dow = selDate.getDay();
+      const badgesEl = document.getElementById('dayBadges');
+      badgesEl.innerHTML = '';
+
+      if (dow === 0) {
+        badgesEl.innerHTML += `<span class="badge badge-rest">Pazar Organ Dinlendirme Modu (Sadece Tiroid + Folat/B12)</span>`;
+      } else if (dow === 1 || dow === 3 || dow === 5) {
+        badgesEl.innerHTML += `<span class="badge badge-mineral">Bugün Çinko + Selenyum Günü</span>`;
+      } else {
+        badgesEl.innerHTML += `<span class="badge" style="background:var(--surface-2);color:var(--muted);">Çinko & Selenyum Bugün Yok</span>`;
+      }
+
+      const cycleSpan = document.createElement('span');
+      cycleSpan.className = 'badge badge-cycle';
+      cycleSpan.textContent = getCycleBadgeText();
+      cycleSpan.onclick = () => openModal('cycleModal');
+      badgesEl.appendChild(cycleSpan);
+
+      const container = document.getElementById('sectionsContainer');
+      container.innerHTML = '';
+
+      sched.forEach(sec => {
+        const secDiv = document.createElement('div');
+        secDiv.className = 'section';
+        secDiv.innerHTML = `
+          <div class="section-header">
+            <span class="section-title">${sec.title}</span>
+            <span class="section-time">${sec.time}</span>
+          </div>
+        `;
+
+        const listDiv = document.createElement('div');
+        listDiv.className = 'item-list';
+
+        sec.items.forEach(item => {
+          const isChecked = !!dayData.checked[item.id];
+          const itemDiv = document.createElement('div');
+          itemDiv.className = 'supp-item' + (isChecked ? ' checked' : '');
+          itemDiv.onclick = () => toggleItem(item.id);
+          itemDiv.innerHTML = `
+            <div class="checkbox">
+              <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </div>
+            <div class="supp-details">
+              <div class="supp-name">${item.name}</div>
+              <div class="supp-note">${item.note}</div>
+            </div>
+            <span class="supp-tag ${item.tagClass}">${item.tag}</span>
+          `;
+          listDiv.appendChild(itemDiv);
+        });
+
+        secDiv.appendChild(listDiv);
+        container.appendChild(secDiv);
+      });
+
+      updateTimerUI();
+    }
+
+    function openModal(id) {
+      if (id === 'thyroidTimeModal') {
+        const dayData = getDayData(selectedKey);
+        if (dayData.thyroidTs) {
+          const d = new Date(dayData.thyroidTs);
+          document.getElementById('thyroidTimeInput').value =
+            `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+        }
+      } else if (id === 'cycleModal') {
+        const store = getStore();
+        document.getElementById('cycleStartInput').value = store.cycleStart || toDateKey(new Date());
+      }
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function saveThyroidTime() {
+      const val = document.getElementById('thyroidTimeInput').value;
+      if (!val) return;
+      const [h, m] = val.split(':').map(Number);
+      const dayData = getDayData(selectedKey);
+      const d = parseDateKey(selectedKey);
+      d.setHours(h, m, 0, 0);
+      dayData.thyroidTs = d.getTime();
+      dayData.checked['levo'] = true;
+      saveDayData(selectedKey, dayData);
+      closeModal('thyroidTimeModal');
+      render();
+    }
+
+    function saveCycleStart() {
+      const val = document.getElementById('cycleStartInput').value;
+      if (!val) return;
+      const store = getStore();
+      store.cycleStart = val;
+      setStore(store);
+      closeModal('cycleModal');
+      render();
+    }
+
+    function resetCycleToday() {
+      const store = getStore();
+      store.cycleStart = toDateKey(new Date());
+      setStore(store);
+      closeModal('cycleModal');
+      render();
+    }
+
+    function requestNotifPermission() {
+      if ('Notification' in window) {
+        Notification.requestPermission().then(perm => {
+          if (perm === 'granted') {
+            new Notification('Takviye Takip', { body: 'Bildirimler aktif! Levotiroksin 4 saat sayacı dolduğunda uyarı alacaksınız.' });
+          }
+        });
+      }
+    }
+
+    function exportBackupJSON() {
+      const store = getStore();
+      const blob = new Blob([JSON.stringify(store, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `takviye-yedek-${toDateKey(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBackupJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (parsed && typeof parsed === 'object') {
+            setStore(parsed);
+            closeModal('alarmModal');
+            render();
+            alert('Tüm zamanların kayıtları başarıyla geri yüklendi.');
+          }
+        } catch {
+          alert('Geçersiz yedek dosyası.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function downloadICS() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const dt = `${y}${m}${d}`;
+
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//TakviyeTakip//Android//TR',
+        'BEGIN:VEVENT',
+        `DTSTART:${dt}T073000`,
+        `DTEND:${dt}T074000`,
+        'RRULE:FREQ=DAILY',
+        'SUMMARY:Levotiroksin 50 mcg (Sabah Aç)',
+        'DESCRIPTION:Tek başına bol su ile iç. 4 saat boyunca başka takviye alma.',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT0M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Levotiroksin 50 mcg',
+        'END:VALARM',
+        'END:VEVENT',
+        'BEGIN:VEVENT',
+        `DTSTART:${dt}T123000`,
+        `DTEND:${dt}T124500`,
+        'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA',
+        'SUMMARY:Öğle Takviyeleri (Tribulus 1 + Folat + B12 + CoQH + D3K2 + Balık Yağı)',
+        'DESCRIPTION:Pzt-Çar-Cum günleri Çinko + Selenyum ekle.',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT0M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Öğle Takviye Paketi',
+        'END:VALARM',
+        'END:VEVENT',
+        'BEGIN:VEVENT',
+        `DTSTART:${dt}T193000`,
+        `DTEND:${dt}T194000`,
+        'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA',
+        'SUMMARY:Tribulus terrestris 2. Kapsül (500 mg)',
+        'DESCRIPTION:Akşam yemeği ile birlikte.',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT0M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Tribulus 2. Kapsül',
+        'END:VALARM',
+        'END:VEVENT',
+        'BEGIN:VEVENT',
+        `DTSTART:${dt}T223000`,
+        `DTEND:${dt}T224000`,
+        'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR,SA',
+        'SUMMARY:Magnezyum (Gece)',
+        'DESCRIPTION:Yatmadan 1 saat önce.',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT0M',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Magnezyum',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'takviye-hatirlaticilar.ics';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    setInterval(updateTimerUI, 1000);
+    render();
+  </script>
+</body>
+</html>

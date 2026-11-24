@@ -1,0 +1,26 @@
+{
+  "name": "Takviye & Tiroid Takip",
+  "short_name": "Takviye Takip",
+  "description": "Tüm zamanlar takvimli, Levotiroksin 4 saat sayacı, gün aşırı çinko/selenyum ve Pazar dinlenme modlu kişisel takviye takip uygulaması.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
